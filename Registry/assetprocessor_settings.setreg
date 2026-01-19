@@ -1,0 +1,23 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "ScanFolder EnhancedInput/Assets": {
+                    "watch": "@GEMROOT:EnhancedInput@/Assets",
+                    "recursive": 1,
+                    "order": 101,
+                    "include": "*.svg;*.png"
+                },
+                "ScanFolder EnhancedInput/Registry": {
+                    "watch": "@GEMROOT:EnhancedInput@/Registry",
+                    "recursive": 1,
+                    "order": 102
+                },
+                "RC EnhancedInput SVG": {
+                    "glob": "Editor/Icons/**/*.svg",
+                    "params": "copy"
+                }
+            }
+        }
+    }
+}
