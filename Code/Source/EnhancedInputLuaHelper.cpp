@@ -503,6 +503,14 @@ namespace EnhancedInput
         {
             return AZStd::make_shared<InputTriggerPulse>();
         }
+        
+        // Parse pulse with interval: "pulse:0.5"
+        if (triggerType.find("pulse:") == 0)
+        {
+            AZStd::string intervalStr = triggerType.substr(6); // Skip "pulse:"
+            float interval = AZStd::stof(intervalStr);
+            return AZStd::make_shared<InputTriggerPulse>(interval, true);
+        }
 
         return AZStd::make_shared<InputTriggerPressed>();
     }

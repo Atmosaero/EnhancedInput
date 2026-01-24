@@ -111,6 +111,11 @@ namespace EnhancedInput
     const AZStd::string InputModifiers::Negate = "negate";
     const AZStd::string InputModifiers::Invert = "invert";
 
+    AZStd::string InputTriggers::PulseWithInterval(float interval)
+    {
+        return "pulse:" + AZStd::to_string(interval);
+    }
+
     void InputKeys::Reflect(AZ::ReflectContext* context)
     {
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
@@ -224,7 +229,8 @@ namespace EnhancedInput
                 ->Method("Released", []() { return InputTriggers::Released; })
                 ->Method("Hold", []() { return InputTriggers::Hold; })
                 ->Method("Tap", []() { return InputTriggers::Tap; })
-                ->Method("Pulse", []() { return InputTriggers::Pulse; });
+                ->Method("Pulse", []() { return InputTriggers::Pulse; })
+                ->Method("Pulse", [](float interval) { return InputTriggers::PulseWithInterval(interval); });
         }
     }
 

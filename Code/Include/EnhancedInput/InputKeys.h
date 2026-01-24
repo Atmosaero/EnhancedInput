@@ -111,7 +111,7 @@ namespace EnhancedInput
     class InputTriggers
     {
     public:
-        AZ_TYPE_INFO(InputTriggers, "{76543210-4321-4321-4321-321098765432}");
+        AZ_TYPE_INFO(InputTriggers, "{12345678-4321-4321-4321-123456789012}");
         static const AZStd::string Pressed;
         static const AZStd::string Down;
         static const AZStd::string Released;
@@ -120,6 +120,8 @@ namespace EnhancedInput
         static const AZStd::string Pulse;
 
         static void Reflect(AZ::ReflectContext* context);
+        
+        static AZStd::string PulseWithInterval(float interval);
     };
 
     class InputModifiers
