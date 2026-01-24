@@ -131,10 +131,7 @@ namespace EnhancedInput
                 ->Method("AddModifierNegate", &EnhancedInputLuaHelper::AddModifierNegate, { { { "Context", "" }, { "ActionName", "" }, { "NegateX", "" }, { "NegateY", "" }, { "NegateZ", "" } } })
                 ->Method("AddModifierScaleVector", &EnhancedInputLuaHelper::AddModifierScaleVector, { { { "Context", "" }, { "ActionName", "" }, { "Scale", "Vector3" } } })
                 ->Method("AddModifierDeadZoneVector", &EnhancedInputLuaHelper::AddModifierDeadZoneVector, { { { "Context", "" }, { "ActionName", "" }, { "LowerThreshold", "Vector3" }, { "UpperThreshold", "Vector3" }, { "Type", "Axial or Radial" } } })
-                ->Method("AddModifierSwizzle", &EnhancedInputLuaHelper::AddModifierSwizzle, { { { "Context", "" }, { "ActionName", "" }, { "Order", "XYZ, XZY, YXZ, YZX, ZXY, ZYX" } } })
-                ->Method("AddModifierClamp", &EnhancedInputLuaHelper::AddModifierClamp, { { { "Context", "" }, { "ActionName", "" }, { "MinValue", "" }, { "MaxValue", "" } } })
-                ->Method("AddModifierNormalize", &EnhancedInputLuaHelper::AddModifierNormalize, { { { "Context", "" }, { "ActionName", "" } } });
-
+                
             behaviorContext->EBus<EnhancedInputRequestBus>("EnhancedInputRequestBus")
                 ->Attribute(AZ::Script::Attributes::Category, "EnhancedInput")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)

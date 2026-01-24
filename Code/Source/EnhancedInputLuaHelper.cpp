@@ -266,70 +266,7 @@ namespace EnhancedInput
         }
     }
 
-    void EnhancedInputLuaHelper::AddModifierSwizzle(InputMappingContextPtr context, const AZStd::string& actionName, const AZStd::string& order)
-    {
-        if (!context)
-        {
-            AZ_Warning("EnhancedInput", false, "AddModifierSwizzle: context is null");
-            return;
-        }
-
-        InputModifierSwizzle::SwizzleOrder swizzleOrder = InputModifierSwizzle::SwizzleOrder::XYZ;
-        if (order == "XZY" || order == "xzy") swizzleOrder = InputModifierSwizzle::SwizzleOrder::XZY;
-        else if (order == "YXZ" || order == "yxz") swizzleOrder = InputModifierSwizzle::SwizzleOrder::YXZ;
-        else if (order == "YZX" || order == "yzx") swizzleOrder = InputModifierSwizzle::SwizzleOrder::YZX;
-        else if (order == "ZXY" || order == "zxy") swizzleOrder = InputModifierSwizzle::SwizzleOrder::ZXY;
-        else if (order == "ZYX" || order == "zyx") swizzleOrder = InputModifierSwizzle::SwizzleOrder::ZYX;
-
-        auto modifier = AZStd::make_shared<InputModifierSwizzle>(swizzleOrder);
-
-        for (auto& binding : context->GetBindings())
-        {
-            if (binding.m_actionName == actionName)
-            {
-                binding.m_modifiers.push_back(modifier);
-            }
-        }
-    }
-
-    void EnhancedInputLuaHelper::AddModifierClamp(InputMappingContextPtr context, const AZStd::string& actionName, float minValue, float maxValue)
-    {
-        if (!context)
-        {
-            AZ_Warning("EnhancedInput", false, "AddModifierClamp: context is null");
-            return;
-        }
-
-        auto modifier = AZStd::make_shared<InputModifierClamp>(minValue, maxValue);
-
-        for (auto& binding : context->GetBindings())
-        {
-            if (binding.m_actionName == actionName)
-            {
-                binding.m_modifiers.push_back(modifier);
-            }
-        }
-    }
-
-    void EnhancedInputLuaHelper::AddModifierNormalize(InputMappingContextPtr context, const AZStd::string& actionName)
-    {
-        if (!context)
-        {
-            AZ_Warning("EnhancedInput", false, "AddModifierNormalize: context is null");
-            return;
-        }
-
-        auto modifier = AZStd::make_shared<InputModifierNormalize>();
-
-        for (auto& binding : context->GetBindings())
-        {
-            if (binding.m_actionName == actionName)
-            {
-                binding.m_modifiers.push_back(modifier);
-            }
-        }
-    }
-
+    
     AzFramework::InputChannelId EnhancedInputLuaHelper::GetInputChannelIdFromName(const AZStd::string& keyName)
     {
         using namespace AzFramework;

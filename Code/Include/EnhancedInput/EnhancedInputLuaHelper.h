@@ -54,10 +54,7 @@ namespace EnhancedInput
         // Vector-based modifier methods (more convenient)
         static void AddModifierScaleVector(InputMappingContextPtr context, const AZStd::string& actionName, const AZ::Vector3& scale);
         static void AddModifierDeadZoneVector(InputMappingContextPtr context, const AZStd::string& actionName, const AZ::Vector3& lowerThreshold, const AZ::Vector3& upperThreshold, const AZStd::string& type);
-        static void AddModifierSwizzle(InputMappingContextPtr context, const AZStd::string& actionName, const AZStd::string& order);
-        static void AddModifierClamp(InputMappingContextPtr context, const AZStd::string& actionName, float minValue, float maxValue);
-        static void AddModifierNormalize(InputMappingContextPtr context, const AZStd::string& actionName);
-
+        
         static void Reflect(AZ::ReflectContext* context);
 
     private:
