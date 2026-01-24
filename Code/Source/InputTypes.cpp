@@ -16,11 +16,8 @@ namespace EnhancedInput
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->EnumProperty<static_cast<int>(TriggerType::Pressed)>("TriggerType_Pressed");
-            behaviorContext->EnumProperty<static_cast<int>(TriggerType::Released)>("TriggerType_Released");
             behaviorContext->EnumProperty<static_cast<int>(TriggerType::Down)>("TriggerType_Down");
-            behaviorContext->EnumProperty<static_cast<int>(TriggerType::Hold)>("TriggerType_Hold");
-            behaviorContext->EnumProperty<static_cast<int>(TriggerType::Tap)>("TriggerType_Tap");
-            behaviorContext->EnumProperty<static_cast<int>(TriggerType::Pulse)>("TriggerType_Pulse");
+            behaviorContext->EnumProperty<static_cast<int>(TriggerType::Released)>("TriggerType_Released");
 
             behaviorContext->EnumProperty<static_cast<int>(InputKey::Key_A)>("InputKey_A");
             behaviorContext->EnumProperty<static_cast<int>(InputKey::Key_B)>("InputKey_B");

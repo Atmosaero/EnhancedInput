@@ -10,4 +10,5 @@ set(FILES
     Source/PlayerInputComponent.cpp
     Source/EnhancedInputLuaHelper.cpp
     Source/InputTypes.cpp
+    Source/InputKeys.cpp
 )

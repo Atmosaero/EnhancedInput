@@ -13,7 +13,9 @@
 #include <EnhancedInput/InputModifier.h>
 #include <EnhancedInput/InputMappingContext.h>
 #include <EnhancedInput/EnhancedInputLuaHelper.h>
-#include <EnhancedInput/InputTypes.h>
+#include <EnhancedInput/InputKeys.h>
+#include <EnhancedInput/EnhancedInputNotificationBusHandler.h>
+#include <EnhancedInput/InputMappingContext.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -23,43 +25,6 @@
 
 namespace EnhancedInput
 {
-    class EnhancedInputNotificationBusHandler
-        : public EnhancedInputNotificationBus::Handler
-        , public AZ::BehaviorEBusHandler
-    {
-    public:
-        AZ_EBUS_BEHAVIOR_BINDER(EnhancedInputNotificationBusHandler, "{CBDCDEF0-1234-5678-9ABC-DEF012345678}", AZ::SystemAllocator,
-            OnActionTriggered,
-            OnActionStarted,
-            OnActionOngoing,
-            OnActionCompleted,
-            OnActionCanceled);
-
-        void OnActionTriggered(const InputActionInstance& instance) override
-        {
-            Call(FN_OnActionTriggered, instance);
-        }
-
-        void OnActionStarted(const InputActionInstance& instance) override
-        {
-            Call(FN_OnActionStarted, instance);
-        }
-
-        void OnActionOngoing(const InputActionInstance& instance) override
-        {
-            Call(FN_OnActionOngoing, instance);
-        }
-
-        void OnActionCompleted(const InputActionInstance& instance) override
-        {
-            Call(FN_OnActionCompleted, instance);
-        }
-
-        void OnActionCanceled(const InputActionInstance& instance) override
-        {
-            Call(FN_OnActionCanceled, instance);
-        }
-    };
 
     AZ_COMPONENT_IMPL(EnhancedInputSystemComponent, "EnhancedInputSystemComponent",
         EnhancedInputSystemComponentTypeId);
@@ -84,6 +49,9 @@ namespace EnhancedInput
         InputModifierNormalize::Reflect(context);
         InputMappingContext::Reflect(context);
         ReflectInputTypes(context);
+        InputKeys::Reflect(context);
+        InputTriggers::Reflect(context);
+        InputModifiers::Reflect(context);
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
@@ -105,105 +73,7 @@ namespace EnhancedInput
             behaviorContext->EnumProperty<static_cast<int>(TriggerState::Completed)>("TriggerState_Completed");
             behaviorContext->EnumProperty<static_cast<int>(TriggerState::Canceled)>("TriggerState_Canceled");
 
-            behaviorContext->EnumProperty<0>("Trigger_Pressed");
-            behaviorContext->EnumProperty<1>("Trigger_Released");
-            behaviorContext->EnumProperty<2>("Trigger_Down");
-            behaviorContext->EnumProperty<3>("Trigger_Hold");
-            behaviorContext->EnumProperty<4>("Trigger_Tap");
-            behaviorContext->EnumProperty<5>("Trigger_Pulse");
-
-            behaviorContext->EnumProperty<0>("Key_A");
-            behaviorContext->EnumProperty<1>("Key_B");
-            behaviorContext->EnumProperty<2>("Key_C");
-            behaviorContext->EnumProperty<3>("Key_D");
-            behaviorContext->EnumProperty<4>("Key_E");
-            behaviorContext->EnumProperty<5>("Key_F");
-            behaviorContext->EnumProperty<6>("Key_G");
-            behaviorContext->EnumProperty<7>("Key_H");
-            behaviorContext->EnumProperty<8>("Key_I");
-            behaviorContext->EnumProperty<9>("Key_J");
-            behaviorContext->EnumProperty<10>("Key_K");
-            behaviorContext->EnumProperty<11>("Key_L");
-            behaviorContext->EnumProperty<12>("Key_M");
-            behaviorContext->EnumProperty<13>("Key_N");
-            behaviorContext->EnumProperty<14>("Key_O");
-            behaviorContext->EnumProperty<15>("Key_P");
-            behaviorContext->EnumProperty<16>("Key_Q");
-            behaviorContext->EnumProperty<17>("Key_R");
-            behaviorContext->EnumProperty<18>("Key_S");
-            behaviorContext->EnumProperty<19>("Key_T");
-            behaviorContext->EnumProperty<20>("Key_U");
-            behaviorContext->EnumProperty<21>("Key_V");
-            behaviorContext->EnumProperty<22>("Key_W");
-            behaviorContext->EnumProperty<23>("Key_X");
-            behaviorContext->EnumProperty<24>("Key_Y");
-            behaviorContext->EnumProperty<25>("Key_Z");
-            behaviorContext->EnumProperty<26>("Key_0");
-            behaviorContext->EnumProperty<27>("Key_1");
-            behaviorContext->EnumProperty<28>("Key_2");
-            behaviorContext->EnumProperty<29>("Key_3");
-            behaviorContext->EnumProperty<30>("Key_4");
-            behaviorContext->EnumProperty<31>("Key_5");
-            behaviorContext->EnumProperty<32>("Key_6");
-            behaviorContext->EnumProperty<33>("Key_7");
-            behaviorContext->EnumProperty<34>("Key_8");
-            behaviorContext->EnumProperty<35>("Key_9");
-            behaviorContext->EnumProperty<36>("Key_Space");
-            behaviorContext->EnumProperty<37>("Key_Enter");
-            behaviorContext->EnumProperty<38>("Key_Escape");
-            behaviorContext->EnumProperty<39>("Key_Tab");
-            behaviorContext->EnumProperty<40>("Key_Backspace");
-            behaviorContext->EnumProperty<41>("Key_LShift");
-            behaviorContext->EnumProperty<42>("Key_RShift");
-            behaviorContext->EnumProperty<43>("Key_LCtrl");
-            behaviorContext->EnumProperty<44>("Key_RCtrl");
-            behaviorContext->EnumProperty<45>("Key_LAlt");
-            behaviorContext->EnumProperty<46>("Key_RAlt");
-            behaviorContext->EnumProperty<47>("Key_Up");
-            behaviorContext->EnumProperty<48>("Key_Down");
-            behaviorContext->EnumProperty<49>("Key_Left");
-            behaviorContext->EnumProperty<50>("Key_Right");
-            behaviorContext->EnumProperty<51>("Key_F1");
-            behaviorContext->EnumProperty<52>("Key_F2");
-            behaviorContext->EnumProperty<53>("Key_F3");
-            behaviorContext->EnumProperty<54>("Key_F4");
-            behaviorContext->EnumProperty<55>("Key_F5");
-            behaviorContext->EnumProperty<56>("Key_F6");
-            behaviorContext->EnumProperty<57>("Key_F7");
-            behaviorContext->EnumProperty<58>("Key_F8");
-            behaviorContext->EnumProperty<59>("Key_F9");
-            behaviorContext->EnumProperty<60>("Key_F10");
-            behaviorContext->EnumProperty<61>("Key_F11");
-            behaviorContext->EnumProperty<62>("Key_F12");
-
-            behaviorContext->EnumProperty<100>("Mouse_Left");
-            behaviorContext->EnumProperty<101>("Mouse_Right");
-            behaviorContext->EnumProperty<102>("Mouse_Middle");
-            behaviorContext->EnumProperty<103>("Mouse_X");
-            behaviorContext->EnumProperty<104>("Mouse_Y");
-            behaviorContext->EnumProperty<105>("Mouse_Wheel");
-
-            behaviorContext->EnumProperty<200>("Gamepad_A");
-            behaviorContext->EnumProperty<201>("Gamepad_B");
-            behaviorContext->EnumProperty<202>("Gamepad_X");
-            behaviorContext->EnumProperty<203>("Gamepad_Y");
-            behaviorContext->EnumProperty<204>("Gamepad_LB");
-            behaviorContext->EnumProperty<205>("Gamepad_RB");
-            behaviorContext->EnumProperty<206>("Gamepad_LT");
-            behaviorContext->EnumProperty<207>("Gamepad_RT");
-            behaviorContext->EnumProperty<208>("Gamepad_LS");
-            behaviorContext->EnumProperty<209>("Gamepad_RS");
-            behaviorContext->EnumProperty<210>("Gamepad_Start");
-            behaviorContext->EnumProperty<211>("Gamepad_Select");
-            behaviorContext->EnumProperty<212>("Gamepad_DPadUp");
-            behaviorContext->EnumProperty<213>("Gamepad_DPadDown");
-            behaviorContext->EnumProperty<214>("Gamepad_DPadLeft");
-            behaviorContext->EnumProperty<215>("Gamepad_DPadRight");
-            behaviorContext->EnumProperty<216>("Gamepad_LeftStickX");
-            behaviorContext->EnumProperty<217>("Gamepad_LeftStickY");
-            behaviorContext->EnumProperty<218>("Gamepad_RightStickX");
-            behaviorContext->EnumProperty<219>("Gamepad_RightStickY");
-
+            
             behaviorContext->Class<InputValue>("InputValue")
                 ->Attribute(AZ::Script::Attributes::Category, "EnhancedInput")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
@@ -229,6 +99,7 @@ namespace EnhancedInput
                     return self->m_action ? self->m_action->GetName() : "";
                 });
 
+            
             behaviorContext->Class<InputMappingContext>("InputMappingContext")
                 ->Attribute(AZ::Script::Attributes::Category, "EnhancedInput")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
@@ -236,16 +107,18 @@ namespace EnhancedInput
                 ->Method("GetName", &InputMappingContext::GetName)
                 ->Method("ClearBindings", &InputMappingContext::ClearBindings);
 
-            behaviorContext->Class<EnhancedInputLuaHelper>("EnhancedInput")
+            
+            behaviorContext->Class<EnhancedInputLuaHelper>("Input")
                 ->Attribute(AZ::Script::Attributes::Category, "EnhancedInput")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Method("CreateContext", &EnhancedInputLuaHelper::CreateContext, { { { "ContextName", "" } } })
                 ->Method("RegisterAction", &EnhancedInputLuaHelper::RegisterAction, { { { "ActionName", "" }, { "ValueType", "Boolean, Axis1D, Axis2D, Axis3D" } } })
                 ->Method("UnregisterAction", &EnhancedInputLuaHelper::UnregisterAction, { { { "ActionName", "" } } })
-                ->Method("BindKey", &EnhancedInputLuaHelper::BindKey, { { { "Context", "" }, { "ActionName", "" }, { "KeyName", "" } } })
-                ->Method("BindKeyWithTrigger", &EnhancedInputLuaHelper::BindKeyWithTrigger, { { { "Context", "" }, { "ActionName", "" }, { "KeyName", "" }, { "TriggerType", "" } } })
-                ->Method("BindAxis", &EnhancedInputLuaHelper::BindAxis, { { { "Context", "" }, { "ActionName", "" }, { "KeyName", "" }, { "ScaleX", "" }, { "ScaleY", "" }, { "ScaleZ", "" } } })
-                ->Method("Bind", &EnhancedInputLuaHelper::Bind, { { { "Context", "" }, { "ActionName", "" }, { "KeyCode", "" }, { "TriggerType", "" } } })
+                ->Method("BindKey", &EnhancedInputLuaHelper::BindKey, { { { "Context", "" }, { "ActionName", "" }, { "KeyName", "" }, { "TriggerType", "pressed, down, released" } } })
+                ->Method("BindAxis", &EnhancedInputLuaHelper::BindAxis, { { { "Context", "" }, { "ActionName", "" }, { "KeyName", "A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, Space, Enter, Escape, Mouse_Left, Mouse_Right, Mouse_Middle, Mouse_X, Mouse_Y, Mouse_Z" }, { "ScaleX", "" }, { "ScaleY", "" }, { "ScaleZ", "" } } })
+                ->Method("BindAxis1D", &EnhancedInputLuaHelper::BindAxis1D, { { { "Context", "" }, { "ActionName", "" }, { "KeyName", "A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, Space, Enter, Escape, Mouse_Left, Mouse_Right, Mouse_Middle, Mouse_X, Mouse_Y, Mouse_Z" }, { "Scale", "" } } })
+                ->Method("BindAxis2D", &EnhancedInputLuaHelper::BindAxis2D, { { { "Context", "" }, { "ActionName", "" }, { "KeyName", "A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, Space, Enter, Escape, Mouse_Left, Mouse_Right, Mouse_Middle, Mouse_X, Mouse_Y, Mouse_Z" }, { "Scale", "Vector2" } } })
+                ->Method("BindAxis3D", &EnhancedInputLuaHelper::BindAxis3D, { { { "Context", "" }, { "ActionName", "" }, { "KeyName", "A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, Space, Enter, Escape, Mouse_Left, Mouse_Right, Mouse_Middle, Mouse_X, Mouse_Y, Mouse_Z" }, { "Scale", "Vector3" } } })
                 ->Method("AddContext", &EnhancedInputLuaHelper::AddContext, { { { "Context", "" }, { "Priority", "" } } })
                 ->Method("RemoveContext", &EnhancedInputLuaHelper::RemoveContext, { { { "ContextName", "" } } })
                 ->Method("ClearAllContexts", &EnhancedInputLuaHelper::ClearAllContexts)
@@ -256,7 +129,8 @@ namespace EnhancedInput
                 ->Method("IsActionTriggered", &EnhancedInputLuaHelper::IsActionTriggered, { { { "ActionName", "" } } })
                 ->Method("AddModifierDeadZone", &EnhancedInputLuaHelper::AddModifierDeadZone, { { { "Context", "" }, { "ActionName", "" }, { "LowerThreshold", "" }, { "UpperThreshold", "" }, { "Type", "Axial or Radial" } } })
                 ->Method("AddModifierNegate", &EnhancedInputLuaHelper::AddModifierNegate, { { { "Context", "" }, { "ActionName", "" }, { "NegateX", "" }, { "NegateY", "" }, { "NegateZ", "" } } })
-                ->Method("AddModifierScale", &EnhancedInputLuaHelper::AddModifierScale, { { { "Context", "" }, { "ActionName", "" }, { "ScaleX", "" }, { "ScaleY", "" }, { "ScaleZ", "" } } })
+                ->Method("AddModifierScaleVector", &EnhancedInputLuaHelper::AddModifierScaleVector, { { { "Context", "" }, { "ActionName", "" }, { "Scale", "Vector3" } } })
+                ->Method("AddModifierDeadZoneVector", &EnhancedInputLuaHelper::AddModifierDeadZoneVector, { { { "Context", "" }, { "ActionName", "" }, { "LowerThreshold", "Vector3" }, { "UpperThreshold", "Vector3" }, { "Type", "Axial or Radial" } } })
                 ->Method("AddModifierSwizzle", &EnhancedInputLuaHelper::AddModifierSwizzle, { { { "Context", "" }, { "ActionName", "" }, { "Order", "XYZ, XZY, YXZ, YZX, ZXY, ZYX" } } })
                 ->Method("AddModifierClamp", &EnhancedInputLuaHelper::AddModifierClamp, { { { "Context", "" }, { "ActionName", "" }, { "MinValue", "" }, { "MaxValue", "" } } })
                 ->Method("AddModifierNormalize", &EnhancedInputLuaHelper::AddModifierNormalize, { { { "Context", "" }, { "ActionName", "" } } });
@@ -548,19 +422,19 @@ namespace EnhancedInput
         switch (instance.m_triggerState)
         {
         case TriggerState::Started:
-            EnhancedInputNotificationBus::Event(actionName, &EnhancedInputNotifications::OnActionStarted, instance);
+            EnhancedInputNotificationBus::Broadcast(&EnhancedInputNotifications::OnActionStarted, instance);
             break;
         case TriggerState::Ongoing:
-            EnhancedInputNotificationBus::Event(actionName, &EnhancedInputNotifications::OnActionOngoing, instance);
+            EnhancedInputNotificationBus::Broadcast(&EnhancedInputNotifications::OnActionOngoing, instance);
             break;
         case TriggerState::Triggered:
-            EnhancedInputNotificationBus::Event(actionName, &EnhancedInputNotifications::OnActionTriggered, instance);
+            EnhancedInputNotificationBus::Broadcast(&EnhancedInputNotifications::OnActionTriggered, instance);
             break;
         case TriggerState::Completed:
-            EnhancedInputNotificationBus::Event(actionName, &EnhancedInputNotifications::OnActionCompleted, instance);
+            EnhancedInputNotificationBus::Broadcast(&EnhancedInputNotifications::OnActionCompleted, instance);
             break;
         case TriggerState::Canceled:
-            EnhancedInputNotificationBus::Event(actionName, &EnhancedInputNotifications::OnActionCanceled, instance);
+            EnhancedInputNotificationBus::Broadcast(&EnhancedInputNotifications::OnActionCanceled, instance);
             break;
         default:
             break;

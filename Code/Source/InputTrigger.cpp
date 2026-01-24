@@ -26,7 +26,11 @@ namespace EnhancedInput
 
         if (isPressed && !m_wasPressed)
         {
-            m_state = TriggerState::Triggered;
+            m_state = TriggerState::Started;
+        }
+        else if (!isPressed && m_wasPressed)
+        {
+            m_state = TriggerState::Completed;
         }
         else
         {
@@ -88,14 +92,26 @@ namespace EnhancedInput
 
     TriggerState InputTriggerDown::UpdateState(const InputValue& value, [[maybe_unused]] float deltaTime)
     {
-        if (!value.IsZero())
+        bool isPressed = !value.IsZero();
+
+        if (isPressed && !m_wasPressed)
         {
-            m_state = TriggerState::Triggered;
+            m_state = TriggerState::Started;
+        }
+        else if (isPressed && m_wasPressed)
+        {
+            m_state = TriggerState::Ongoing;
+        }
+        else if (!isPressed && m_wasPressed)
+        {
+            m_state = TriggerState::Completed;
         }
         else
         {
             m_state = TriggerState::None;
         }
+
+        m_wasPressed = isPressed;
         return m_state;
     }
 

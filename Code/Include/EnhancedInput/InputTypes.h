@@ -16,11 +16,8 @@ namespace EnhancedInput
     enum class TriggerType : AZ::u8
     {
         Pressed = 0,
-        Released = 1,
-        Down = 2,
-        Hold = 3,
-        Tap = 4,
-        Pulse = 5
+        Down = 1,
+        Released = 2
     };
 
     enum class InputKey : AZ::u16

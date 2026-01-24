@@ -31,11 +31,13 @@ namespace EnhancedInput
         static void RegisterAction(const AZStd::string& actionName, const AZStd::string& valueType);
         static void UnregisterAction(const AZStd::string& actionName);
 
-        static void BindKey(InputMappingContextPtr context, const AZStd::string& actionName, const AZStd::string& keyName);
-        static void BindKeyWithTrigger(InputMappingContextPtr context, const AZStd::string& actionName, const AZStd::string& keyName, const AZStd::string& triggerType);
+        static void BindKey(InputMappingContextPtr context, const AZStd::string& actionName, const AZStd::string& keyName, const AZStd::string& triggerType = "pressed");
         static void BindAxis(InputMappingContextPtr context, const AZStd::string& actionName, const AZStd::string& keyName, float scaleX, float scaleY, float scaleZ);
-
-        static void Bind(InputMappingContextPtr context, const AZStd::string& actionName, int keyCode, int triggerType);
+        
+        // Type-specific axis binding
+        static void BindAxis1D(InputMappingContextPtr context, const AZStd::string& actionName, const AZStd::string& keyName, float scale);
+        static void BindAxis2D(InputMappingContextPtr context, const AZStd::string& actionName, const AZStd::string& keyName, const AZ::Vector2& scale);
+        static void BindAxis3D(InputMappingContextPtr context, const AZStd::string& actionName, const AZStd::string& keyName, const AZ::Vector3& scale);
 
         static void AddContext(InputMappingContextPtr context, int priority);
         static void RemoveContext(const AZStd::string& contextName);
@@ -49,7 +51,9 @@ namespace EnhancedInput
 
         static void AddModifierDeadZone(InputMappingContextPtr context, const AZStd::string& actionName, float lowerThreshold, float upperThreshold, const AZStd::string& type);
         static void AddModifierNegate(InputMappingContextPtr context, const AZStd::string& actionName, bool negateX, bool negateY, bool negateZ);
-        static void AddModifierScale(InputMappingContextPtr context, const AZStd::string& actionName, float scaleX, float scaleY, float scaleZ);
+        // Vector-based modifier methods (more convenient)
+        static void AddModifierScaleVector(InputMappingContextPtr context, const AZStd::string& actionName, const AZ::Vector3& scale);
+        static void AddModifierDeadZoneVector(InputMappingContextPtr context, const AZStd::string& actionName, const AZ::Vector3& lowerThreshold, const AZ::Vector3& upperThreshold, const AZStd::string& type);
         static void AddModifierSwizzle(InputMappingContextPtr context, const AZStd::string& actionName, const AZStd::string& order);
         static void AddModifierClamp(InputMappingContextPtr context, const AZStd::string& actionName, float minValue, float maxValue);
         static void AddModifierNormalize(InputMappingContextPtr context, const AZStd::string& actionName);
@@ -58,9 +62,7 @@ namespace EnhancedInput
 
     private:
         static AzFramework::InputChannelId GetInputChannelIdFromName(const AZStd::string& keyName);
-        static AzFramework::InputChannelId GetInputChannelIdFromCode(int keyCode);
         static InputTriggerPtr CreateTriggerFromName(const AZStd::string& triggerType);
-        static InputTriggerPtr CreateTriggerFromCode(int triggerType);
     };
 
 } // namespace EnhancedInput

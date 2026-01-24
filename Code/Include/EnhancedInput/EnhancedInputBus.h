@@ -56,8 +56,7 @@ namespace EnhancedInput
     {
     public:
         static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
-        static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-        using BusIdType = AZStd::string;
+        static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
 
         virtual void OnActionTriggered([[maybe_unused]] const InputActionInstance& instance) {}
         virtual void OnActionStarted([[maybe_unused]] const InputActionInstance& instance) {}

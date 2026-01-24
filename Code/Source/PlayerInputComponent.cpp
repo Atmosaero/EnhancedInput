@@ -114,15 +114,12 @@ namespace EnhancedInput
 
     void PlayerInputComponent::Activate()
     {
-        for (const auto& actionName : m_subscribedActions)
-        {
-            EnhancedInputNotificationBus::MultiHandler::BusConnect(actionName);
-        }
+        EnhancedInputNotificationBus::Handler::BusConnect();
     }
 
     void PlayerInputComponent::Deactivate()
     {
-        EnhancedInputNotificationBus::MultiHandler::BusDisconnect();
+        EnhancedInputNotificationBus::Handler::BusDisconnect();
     }
 
     void PlayerInputComponent::SubscribeToAction(const AZStd::string& actionName)
@@ -130,7 +127,6 @@ namespace EnhancedInput
         if (AZStd::find(m_subscribedActions.begin(), m_subscribedActions.end(), actionName) == m_subscribedActions.end())
         {
             m_subscribedActions.push_back(actionName);
-            EnhancedInputNotificationBus::MultiHandler::BusConnect(actionName);
         }
     }
 
@@ -139,14 +135,12 @@ namespace EnhancedInput
         auto it = AZStd::find(m_subscribedActions.begin(), m_subscribedActions.end(), actionName);
         if (it != m_subscribedActions.end())
         {
-            EnhancedInputNotificationBus::MultiHandler::BusDisconnect(actionName);
             m_subscribedActions.erase(it);
         }
     }
 
     void PlayerInputComponent::UnsubscribeFromAllActions()
     {
-        EnhancedInputNotificationBus::MultiHandler::BusDisconnect();
         m_subscribedActions.clear();
     }
 
@@ -154,7 +148,7 @@ namespace EnhancedInput
     {
         if (instance.m_action)
         {
-            PlayerInputNotificationBus::Event(GetEntityId(), &PlayerInputNotifications::OnInputActionTriggered, instance.m_action->GetName(), instance);
+            PlayerInputNotificationBus::Broadcast(&PlayerInputNotifications::OnInputActionTriggered, instance.m_action->GetName(), instance);
         }
     }
 
@@ -162,7 +156,7 @@ namespace EnhancedInput
     {
         if (instance.m_action)
         {
-            PlayerInputNotificationBus::Event(GetEntityId(), &PlayerInputNotifications::OnInputActionStarted, instance.m_action->GetName(), instance);
+            PlayerInputNotificationBus::Broadcast(&PlayerInputNotifications::OnInputActionStarted, instance.m_action->GetName(), instance);
         }
     }
 
@@ -170,7 +164,7 @@ namespace EnhancedInput
     {
         if (instance.m_action)
         {
-            PlayerInputNotificationBus::Event(GetEntityId(), &PlayerInputNotifications::OnInputActionOngoing, instance.m_action->GetName(), instance);
+            PlayerInputNotificationBus::Broadcast(&PlayerInputNotifications::OnInputActionOngoing, instance.m_action->GetName(), instance);
         }
     }
 
@@ -178,7 +172,7 @@ namespace EnhancedInput
     {
         if (instance.m_action)
         {
-            PlayerInputNotificationBus::Event(GetEntityId(), &PlayerInputNotifications::OnInputActionCompleted, instance.m_action->GetName(), instance);
+            PlayerInputNotificationBus::Broadcast(&PlayerInputNotifications::OnInputActionCompleted, instance.m_action->GetName(), instance);
         }
     }
 
@@ -186,7 +180,7 @@ namespace EnhancedInput
     {
         if (instance.m_action)
         {
-            PlayerInputNotificationBus::Event(GetEntityId(), &PlayerInputNotifications::OnInputActionCanceled, instance.m_action->GetName(), instance);
+            PlayerInputNotificationBus::Broadcast(&PlayerInputNotifications::OnInputActionCanceled, instance.m_action->GetName(), instance);
         }
     }
 

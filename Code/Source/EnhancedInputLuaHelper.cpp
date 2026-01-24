@@ -46,12 +46,7 @@ namespace EnhancedInput
         EnhancedInputRequestBus::Broadcast(&EnhancedInputRequests::UnregisterAction, actionName);
     }
 
-    void EnhancedInputLuaHelper::BindKey(InputMappingContextPtr context, const AZStd::string& actionName, const AZStd::string& keyName)
-    {
-        BindKeyWithTrigger(context, actionName, keyName, "pressed");
-    }
-
-    void EnhancedInputLuaHelper::BindKeyWithTrigger(InputMappingContextPtr context, const AZStd::string& actionName, const AZStd::string& keyName, const AZStd::string& triggerType)
+    void EnhancedInputLuaHelper::BindKey(InputMappingContextPtr context, const AZStd::string& actionName, const AZStd::string& keyName, const AZStd::string& triggerType)
     {
         if (!context)
         {
@@ -93,25 +88,19 @@ namespace EnhancedInput
         context->AddBinding(binding);
     }
 
-    void EnhancedInputLuaHelper::Bind(InputMappingContextPtr context, const AZStd::string& actionName, int keyCode, int triggerType)
+    void EnhancedInputLuaHelper::BindAxis1D(InputMappingContextPtr context, const AZStd::string& actionName, const AZStd::string& keyName, float scale)
     {
-        if (!context)
-        {
-            AZ_Warning("EnhancedInput", false, "Bind: context is null");
-            return;
-        }
+        BindAxis(context, actionName, keyName, 0.0f, 0.0f, scale);
+    }
 
-        InputActionBinding binding;
-        binding.m_actionName = actionName;
-        binding.m_inputChannelId = GetInputChannelIdFromCode(keyCode);
+    void EnhancedInputLuaHelper::BindAxis2D(InputMappingContextPtr context, const AZStd::string& actionName, const AZStd::string& keyName, const AZ::Vector2& scale)
+    {
+        BindAxis(context, actionName, keyName, scale.GetX(), scale.GetY(), 0.0f);
+    }
 
-        auto trigger = CreateTriggerFromCode(triggerType);
-        if (trigger)
-        {
-            binding.m_triggers.push_back(trigger);
-        }
-
-        context->AddBinding(binding);
+    void EnhancedInputLuaHelper::BindAxis3D(InputMappingContextPtr context, const AZStd::string& actionName, const AZStd::string& keyName, const AZ::Vector3& scale)
+    {
+        BindAxis(context, actionName, keyName, scale.GetX(), scale.GetY(), scale.GetZ());
     }
 
     void EnhancedInputLuaHelper::AddContext(InputMappingContextPtr context, int priority)
@@ -228,21 +217,51 @@ namespace EnhancedInput
         }
     }
 
-    void EnhancedInputLuaHelper::AddModifierScale(InputMappingContextPtr context, const AZStd::string& actionName, float scaleX, float scaleY, float scaleZ)
+    void EnhancedInputLuaHelper::AddModifierScaleVector(InputMappingContextPtr context, const AZStd::string& actionName, const AZ::Vector3& scale)
     {
         if (!context)
         {
-            AZ_Warning("EnhancedInput", false, "AddModifierScale: context is null");
+            AZ_Warning("EnhancedInput", false, "AddModifierScaleVector: context is null");
             return;
         }
 
-        auto modifier = AZStd::make_shared<InputModifierScale>(AZ::Vector3(scaleX, scaleY, scaleZ));
+        auto modifier = AZStd::make_shared<InputModifierScale>(scale);
 
         for (auto& binding : context->GetBindings())
         {
             if (binding.m_actionName == actionName)
             {
                 binding.m_modifiers.push_back(modifier);
+            }
+        }
+    }
+
+    void EnhancedInputLuaHelper::AddModifierDeadZoneVector(InputMappingContextPtr context, const AZStd::string& actionName, const AZ::Vector3& lowerThreshold, const AZ::Vector3& upperThreshold, const AZStd::string& type)
+    {
+        if (!context)
+        {
+            AZ_Warning("EnhancedInput", false, "AddModifierDeadZoneVector: context is null");
+            return;
+        }
+
+        InputModifierDeadZone::DeadZoneType dzType = InputModifierDeadZone::DeadZoneType::Axial;
+        if (type == "radial" || type == "Radial")
+        {
+            dzType = InputModifierDeadZone::DeadZoneType::Radial;
+        }
+
+        // Create separate dead zone modifiers for each axis
+        auto modifierX = AZStd::make_shared<InputModifierDeadZone>(lowerThreshold.GetX(), upperThreshold.GetX(), dzType);
+        auto modifierY = AZStd::make_shared<InputModifierDeadZone>(lowerThreshold.GetY(), upperThreshold.GetY(), dzType);
+        auto modifierZ = AZStd::make_shared<InputModifierDeadZone>(lowerThreshold.GetZ(), upperThreshold.GetZ(), dzType);
+
+        for (auto& binding : context->GetBindings())
+        {
+            if (binding.m_actionName == actionName)
+            {
+                binding.m_modifiers.push_back(modifierX);
+                binding.m_modifiers.push_back(modifierY);
+                binding.m_modifiers.push_back(modifierZ);
             }
         }
     }
@@ -314,6 +333,43 @@ namespace EnhancedInput
     AzFramework::InputChannelId EnhancedInputLuaHelper::GetInputChannelIdFromName(const AZStd::string& keyName)
     {
         using namespace AzFramework;
+
+        if (keyName == "Mouse_Left" || keyName == "100") return InputDeviceMouse::Button::Left;
+        if (keyName == "Mouse_Right" || keyName == "101") return InputDeviceMouse::Button::Right;
+        if (keyName == "Mouse_Middle" || keyName == "102") return InputDeviceMouse::Button::Middle;
+        if (keyName == "Mouse_X" || keyName == "103") return InputDeviceMouse::Movement::X;
+        if (keyName == "Mouse_Y" || keyName == "104") return InputDeviceMouse::Movement::Y;
+        if (keyName == "Mouse_Z" || keyName == "105") return InputDeviceMouse::Movement::Z;
+
+        if (keyName == "Key_A" || keyName == "60") return InputDeviceKeyboard::Key::AlphanumericA;
+        if (keyName == "Key_B" || keyName == "61") return InputDeviceKeyboard::Key::AlphanumericB;
+        if (keyName == "Key_C" || keyName == "62") return InputDeviceKeyboard::Key::AlphanumericC;
+        if (keyName == "Key_D" || keyName == "63") return InputDeviceKeyboard::Key::AlphanumericD;
+        if (keyName == "Key_E" || keyName == "64") return InputDeviceKeyboard::Key::AlphanumericE;
+        if (keyName == "Key_F" || keyName == "65") return InputDeviceKeyboard::Key::AlphanumericF;
+        if (keyName == "Key_G" || keyName == "66") return InputDeviceKeyboard::Key::AlphanumericG;
+        if (keyName == "Key_H" || keyName == "67") return InputDeviceKeyboard::Key::AlphanumericH;
+        if (keyName == "Key_I" || keyName == "68") return InputDeviceKeyboard::Key::AlphanumericI;
+        if (keyName == "Key_J" || keyName == "69") return InputDeviceKeyboard::Key::AlphanumericJ;
+        if (keyName == "Key_K" || keyName == "70") return InputDeviceKeyboard::Key::AlphanumericK;
+        if (keyName == "Key_L" || keyName == "71") return InputDeviceKeyboard::Key::AlphanumericL;
+        if (keyName == "Key_M" || keyName == "72") return InputDeviceKeyboard::Key::AlphanumericM;
+        if (keyName == "Key_N" || keyName == "73") return InputDeviceKeyboard::Key::AlphanumericN;
+        if (keyName == "Key_O" || keyName == "74") return InputDeviceKeyboard::Key::AlphanumericO;
+        if (keyName == "Key_P" || keyName == "75") return InputDeviceKeyboard::Key::AlphanumericP;
+        if (keyName == "Key_Q" || keyName == "76") return InputDeviceKeyboard::Key::AlphanumericQ;
+        if (keyName == "Key_R" || keyName == "77") return InputDeviceKeyboard::Key::AlphanumericR;
+        if (keyName == "Key_S" || keyName == "78") return InputDeviceKeyboard::Key::AlphanumericS;
+        if (keyName == "Key_T" || keyName == "79") return InputDeviceKeyboard::Key::AlphanumericT;
+        if (keyName == "Key_U" || keyName == "80") return InputDeviceKeyboard::Key::AlphanumericU;
+        if (keyName == "Key_V" || keyName == "81") return InputDeviceKeyboard::Key::AlphanumericV;
+        if (keyName == "Key_W" || keyName == "82") return InputDeviceKeyboard::Key::AlphanumericW;
+        if (keyName == "Key_X" || keyName == "83") return InputDeviceKeyboard::Key::AlphanumericX;
+        if (keyName == "Key_Y" || keyName == "84") return InputDeviceKeyboard::Key::AlphanumericY;
+        if (keyName == "Key_Z" || keyName == "85") return InputDeviceKeyboard::Key::AlphanumericZ;
+        if (keyName == "Key_Space" || keyName == "86") return InputDeviceKeyboard::Key::EditSpace;
+        if (keyName == "Key_Enter" || keyName == "87") return InputDeviceKeyboard::Key::EditEnter;
+        if (keyName == "Key_Escape" || keyName == "88") return InputDeviceKeyboard::Key::Escape;
 
         if (keyName == "keyboard_key_alphanumeric_A" || keyName == "A") return InputDeviceKeyboard::Key::AlphanumericA;
         if (keyName == "keyboard_key_alphanumeric_B" || keyName == "B") return InputDeviceKeyboard::Key::AlphanumericB;
@@ -397,8 +453,8 @@ namespace EnhancedInput
         if (keyName == "gamepad_button_r1" || keyName == "GamepadR1" || keyName == "RB") return InputDeviceGamepad::Button::R1;
         if (keyName == "gamepad_button_l3" || keyName == "GamepadL3" || keyName == "LS") return InputDeviceGamepad::Button::L3;
         if (keyName == "gamepad_button_r3" || keyName == "GamepadR3" || keyName == "RS") return InputDeviceGamepad::Button::R3;
-        if (keyName == "gamepad_button_start" || keyName == "Start") return InputDeviceGamepad::Button::Start;
-        if (keyName == "gamepad_button_select" || keyName == "Select" || keyName == "Back") return InputDeviceGamepad::Button::Select;
+        if (keyName == "gamepad_button_start" || keyName == "Start" || keyName == "GamepadStart") return InputDeviceGamepad::Button::Start;
+        if (keyName == "gamepad_button_select" || keyName == "Select" || keyName == "Back" || keyName == "GamepadSelect") return InputDeviceGamepad::Button::Select;
 
         if (keyName == "gamepad_trigger_l2" || keyName == "GamepadL2" || keyName == "LT") return InputDeviceGamepad::Trigger::L2;
         if (keyName == "gamepad_trigger_r2" || keyName == "GamepadR2" || keyName == "RT") return InputDeviceGamepad::Trigger::R2;
@@ -408,10 +464,10 @@ namespace EnhancedInput
         if (keyName == "gamepad_stick_r_x" || keyName == "RightStickX") return InputDeviceGamepad::ThumbStickAxis1D::RX;
         if (keyName == "gamepad_stick_r_y" || keyName == "RightStickY") return InputDeviceGamepad::ThumbStickAxis1D::RY;
 
-        if (keyName == "gamepad_dpad_up" || keyName == "DPadUp") return InputDeviceGamepad::Button::DU;
-        if (keyName == "gamepad_dpad_down" || keyName == "DPadDown") return InputDeviceGamepad::Button::DD;
-        if (keyName == "gamepad_dpad_left" || keyName == "DPadLeft") return InputDeviceGamepad::Button::DL;
-        if (keyName == "gamepad_dpad_right" || keyName == "DPadRight") return InputDeviceGamepad::Button::DR;
+        if (keyName == "gamepad_dpad_up" || keyName == "DPadUp" || keyName == "GamepadDU") return InputDeviceGamepad::Button::DU;
+        if (keyName == "gamepad_dpad_down" || keyName == "DPadDown" || keyName == "GamepadDD") return InputDeviceGamepad::Button::DD;
+        if (keyName == "gamepad_dpad_left" || keyName == "DPadLeft" || keyName == "GamepadDL") return InputDeviceGamepad::Button::DL;
+        if (keyName == "gamepad_dpad_right" || keyName == "DPadRight" || keyName == "GamepadDR") return InputDeviceGamepad::Button::DR;
 
         if (keyName == "mouse_movement_x" || keyName == "MouseX" || keyName == "mouse_delta_x" || keyName == "MouseDeltaX") return InputDeviceMouse::Movement::X;
         if (keyName == "mouse_movement_y" || keyName == "MouseY" || keyName == "mouse_delta_y" || keyName == "MouseDeltaY") return InputDeviceMouse::Movement::Y;
@@ -419,121 +475,6 @@ namespace EnhancedInput
 
         AZ_Warning("EnhancedInput", false, "Unknown key name: %s", keyName.c_str());
         return AzFramework::InputChannelId(keyName.c_str());
-    }
-
-    AzFramework::InputChannelId EnhancedInputLuaHelper::GetInputChannelIdFromCode(int keyCode)
-    {
-        using namespace AzFramework;
-
-        switch (keyCode)
-        {
-        case 0: return InputDeviceKeyboard::Key::AlphanumericA;
-        case 1: return InputDeviceKeyboard::Key::AlphanumericB;
-        case 2: return InputDeviceKeyboard::Key::AlphanumericC;
-        case 3: return InputDeviceKeyboard::Key::AlphanumericD;
-        case 4: return InputDeviceKeyboard::Key::AlphanumericE;
-        case 5: return InputDeviceKeyboard::Key::AlphanumericF;
-        case 6: return InputDeviceKeyboard::Key::AlphanumericG;
-        case 7: return InputDeviceKeyboard::Key::AlphanumericH;
-        case 8: return InputDeviceKeyboard::Key::AlphanumericI;
-        case 9: return InputDeviceKeyboard::Key::AlphanumericJ;
-        case 10: return InputDeviceKeyboard::Key::AlphanumericK;
-        case 11: return InputDeviceKeyboard::Key::AlphanumericL;
-        case 12: return InputDeviceKeyboard::Key::AlphanumericM;
-        case 13: return InputDeviceKeyboard::Key::AlphanumericN;
-        case 14: return InputDeviceKeyboard::Key::AlphanumericO;
-        case 15: return InputDeviceKeyboard::Key::AlphanumericP;
-        case 16: return InputDeviceKeyboard::Key::AlphanumericQ;
-        case 17: return InputDeviceKeyboard::Key::AlphanumericR;
-        case 18: return InputDeviceKeyboard::Key::AlphanumericS;
-        case 19: return InputDeviceKeyboard::Key::AlphanumericT;
-        case 20: return InputDeviceKeyboard::Key::AlphanumericU;
-        case 21: return InputDeviceKeyboard::Key::AlphanumericV;
-        case 22: return InputDeviceKeyboard::Key::AlphanumericW;
-        case 23: return InputDeviceKeyboard::Key::AlphanumericX;
-        case 24: return InputDeviceKeyboard::Key::AlphanumericY;
-        case 25: return InputDeviceKeyboard::Key::AlphanumericZ;
-        case 26: return InputDeviceKeyboard::Key::Alphanumeric0;
-        case 27: return InputDeviceKeyboard::Key::Alphanumeric1;
-        case 28: return InputDeviceKeyboard::Key::Alphanumeric2;
-        case 29: return InputDeviceKeyboard::Key::Alphanumeric3;
-        case 30: return InputDeviceKeyboard::Key::Alphanumeric4;
-        case 31: return InputDeviceKeyboard::Key::Alphanumeric5;
-        case 32: return InputDeviceKeyboard::Key::Alphanumeric6;
-        case 33: return InputDeviceKeyboard::Key::Alphanumeric7;
-        case 34: return InputDeviceKeyboard::Key::Alphanumeric8;
-        case 35: return InputDeviceKeyboard::Key::Alphanumeric9;
-        case 36: return InputDeviceKeyboard::Key::EditSpace;
-        case 37: return InputDeviceKeyboard::Key::EditEnter;
-        case 38: return InputDeviceKeyboard::Key::Escape;
-        case 39: return InputDeviceKeyboard::Key::EditTab;
-        case 40: return InputDeviceKeyboard::Key::EditBackspace;
-        case 41: return InputDeviceKeyboard::Key::ModifierShiftL;
-        case 42: return InputDeviceKeyboard::Key::ModifierShiftR;
-        case 43: return InputDeviceKeyboard::Key::ModifierCtrlL;
-        case 44: return InputDeviceKeyboard::Key::ModifierCtrlR;
-        case 45: return InputDeviceKeyboard::Key::ModifierAltL;
-        case 46: return InputDeviceKeyboard::Key::ModifierAltR;
-        case 47: return InputDeviceKeyboard::Key::NavigationArrowUp;
-        case 48: return InputDeviceKeyboard::Key::NavigationArrowDown;
-        case 49: return InputDeviceKeyboard::Key::NavigationArrowLeft;
-        case 50: return InputDeviceKeyboard::Key::NavigationArrowRight;
-        case 51: return InputDeviceKeyboard::Key::Function01;
-        case 52: return InputDeviceKeyboard::Key::Function02;
-        case 53: return InputDeviceKeyboard::Key::Function03;
-        case 54: return InputDeviceKeyboard::Key::Function04;
-        case 55: return InputDeviceKeyboard::Key::Function05;
-        case 56: return InputDeviceKeyboard::Key::Function06;
-        case 57: return InputDeviceKeyboard::Key::Function07;
-        case 58: return InputDeviceKeyboard::Key::Function08;
-        case 59: return InputDeviceKeyboard::Key::Function09;
-        case 60: return InputDeviceKeyboard::Key::Function10;
-        case 61: return InputDeviceKeyboard::Key::Function11;
-        case 62: return InputDeviceKeyboard::Key::Function12;
-        case 100: return InputDeviceMouse::Button::Left;
-        case 101: return InputDeviceMouse::Button::Right;
-        case 102: return InputDeviceMouse::Button::Middle;
-        case 103: return InputDeviceMouse::Movement::X;
-        case 104: return InputDeviceMouse::Movement::Y;
-        case 105: return InputDeviceMouse::Movement::Z;
-        case 200: return InputDeviceGamepad::Button::A;
-        case 201: return InputDeviceGamepad::Button::B;
-        case 202: return InputDeviceGamepad::Button::X;
-        case 203: return InputDeviceGamepad::Button::Y;
-        case 204: return InputDeviceGamepad::Button::L1;
-        case 205: return InputDeviceGamepad::Button::R1;
-        case 206: return InputDeviceGamepad::Trigger::L2;
-        case 207: return InputDeviceGamepad::Trigger::R2;
-        case 208: return InputDeviceGamepad::Button::L3;
-        case 209: return InputDeviceGamepad::Button::R3;
-        case 210: return InputDeviceGamepad::Button::Start;
-        case 211: return InputDeviceGamepad::Button::Select;
-        case 212: return InputDeviceGamepad::Button::DU;
-        case 213: return InputDeviceGamepad::Button::DD;
-        case 214: return InputDeviceGamepad::Button::DL;
-        case 215: return InputDeviceGamepad::Button::DR;
-        case 216: return InputDeviceGamepad::ThumbStickAxis1D::LX;
-        case 217: return InputDeviceGamepad::ThumbStickAxis1D::LY;
-        case 218: return InputDeviceGamepad::ThumbStickAxis1D::RX;
-        case 219: return InputDeviceGamepad::ThumbStickAxis1D::RY;
-        default:
-            AZ_Warning("EnhancedInput", false, "Unknown key code: %d", keyCode);
-            return InputDeviceKeyboard::Key::AlphanumericA;
-        }
-    }
-
-    InputTriggerPtr EnhancedInputLuaHelper::CreateTriggerFromCode(int triggerType)
-    {
-        switch (triggerType)
-        {
-        case 0: return AZStd::make_shared<InputTriggerPressed>();
-        case 1: return AZStd::make_shared<InputTriggerReleased>();
-        case 2: return AZStd::make_shared<InputTriggerDown>();
-        case 3: return AZStd::make_shared<InputTriggerHold>();
-        case 4: return AZStd::make_shared<InputTriggerTap>();
-        case 5: return AZStd::make_shared<InputTriggerPulse>();
-        default: return AZStd::make_shared<InputTriggerPressed>();
-        }
     }
 
     InputTriggerPtr EnhancedInputLuaHelper::CreateTriggerFromName(const AZStd::string& triggerType)
@@ -576,8 +517,6 @@ namespace EnhancedInput
                 ->Method("CreateContext", &EnhancedInputLuaHelper::CreateContext)
                 ->Method("RegisterAction", &EnhancedInputLuaHelper::RegisterAction)
                 ->Method("UnregisterAction", &EnhancedInputLuaHelper::UnregisterAction)
-                ->Method("BindKey", &EnhancedInputLuaHelper::BindKey)
-                ->Method("BindKeyWithTrigger", &EnhancedInputLuaHelper::BindKeyWithTrigger)
                 ->Method("AddContext", &EnhancedInputLuaHelper::AddContext)
                 ->Method("RemoveContext", &EnhancedInputLuaHelper::RemoveContext)
                 ->Method("ClearAllContexts", &EnhancedInputLuaHelper::ClearAllContexts)

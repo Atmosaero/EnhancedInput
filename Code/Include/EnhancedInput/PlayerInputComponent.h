@@ -17,7 +17,7 @@ namespace EnhancedInput
 {
     class PlayerInputComponent
         : public AZ::Component
-        , public EnhancedInputNotificationBus::MultiHandler
+        , public EnhancedInputNotificationBus::Handler
     {
     public:
         AZ_COMPONENT(PlayerInputComponent, "{A9BACBDC-DEF0-1234-5678-90ABCDEF0123}");

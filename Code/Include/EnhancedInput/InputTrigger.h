@@ -75,6 +75,9 @@ namespace EnhancedInput
         TriggerState UpdateState(const InputValue& value, float deltaTime) override;
 
         static void Reflect(AZ::ReflectContext* context);
+
+    private:
+        bool m_wasPressed = false;
     };
 
     class InputTriggerHold : public InputTrigger
